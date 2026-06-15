@@ -1,0 +1,25 @@
+@startuml C4-Level2-Container
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+LAYOUT_WITH_LEGEND()
+title [C4 Nível 2] Diagrama de Containers — Plataforma de Tickets
+
+Person(usuario, "Usuário Final", "Comprador de ingressos")
+
+System_Boundary(plataforma, "Plataforma de Tickets") {
+    Container(frontend, "Microfrontend", "React + Vite", "SPA — Dashboard de eventos e pedidos. Porta 5173.")
+    Container(bff, "BFF", "Node.js / NestJS", "Agrega dados dos microsserviços e expõe API para o frontend. Porta 3000.")
+    Container(msEventos, "MS Catálogo de Eventos", "C# / ASP.NET Core 10", "CRUD do catálogo com Clean Architecture + Vertical Slice. Porta 5001.")
+    Container(msPedidos, "MS Pedidos", "C# / ASP.NET Core 10", "CRUD de pedidos com Clean Architecture + Vertical Slice. Porta 5002.")
+    Container(azFunction, "Azure Function", "C# / Isolated Worker (.NET 8)", "Calcula taxas de conveniência via HTTP Trigger. Porta 7071.")
+    ContainerDb(mongodb, "MongoDB", "MongoDB 7", "Armazena documentos de eventos (NoSQL)")
+    ContainerDb(sqlserver, "SQL Server", "SQL Server 2022", "Armazena registros de pedidos (Relacional)")
+}
+
+Rel(usuario, frontend, "Acessa via browser", "HTTPS/:5173")
+Rel(frontend, bff, "GET /api/aggregated-data", "HTTP/:3000")
+Rel(bff, msEventos, "GET /api/eventos", "HTTP/:5001")
+Rel(bff, msPedidos, "GET /api/pedidos", "HTTP/:5002")
+Rel(bff, azFunction, "GET /api/calcular-taxa", "HTTP/:7071")
+Rel(msEventos, mongodb, "Persiste eventos", "MongoDB Driver/:27017")
+Rel(msPedidos, sqlserver, "Persiste pedidos", "EF Core/:1433")
+@enduml

@@ -1,0 +1,18 @@
+@startuml C4-Level1-Context
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+LAYOUT_WITH_LEGEND()
+title [C4 Nível 1] Diagrama de Contexto — Plataforma de Tickets
+
+Person(usuario, "Usuário Final", "Comprador de ingressos de eventos")
+Person(admin, "Administrador", "Gerencia eventos e pedidos")
+System(plataforma, "Plataforma de Tickets", "Sistema distribuído de venda e gerenciamento de ingressos para eventos culturais e esportivos")
+System_Ext(mongoAtlas, "MongoDB Atlas", "Banco de dados NoSQL gerenciado na nuvem")
+System_Ext(azureSQL, "Azure SQL Database", "Banco de dados relacional gerenciado")
+System_Ext(dockerHub, "Docker Hub", "Registro de imagens de contêineres")
+
+Rel(usuario, plataforma, "Consulta eventos e faz pedidos", "HTTPS")
+Rel(admin, plataforma, "Gerencia catálogo e pedidos", "HTTPS")
+Rel(plataforma, mongoAtlas, "Persiste catálogo de eventos", "TCP/27017")
+Rel(plataforma, azureSQL, "Persiste pedidos e transações", "TCP/1433")
+Rel(plataforma, dockerHub, "Publica imagens de contêineres", "HTTPS")
+@enduml

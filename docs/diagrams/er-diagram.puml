@@ -1,0 +1,31 @@
+@startuml ER-Diagram
+title [ER] Modelo de Dados — Plataforma de Tickets
+
+entity "eventos\n(MongoDB Collection)" as EVENTO {
+  * _id : ObjectId <<PK>>
+  --
+  * nome : String
+  * data : ISODate
+  * local : String
+  * capacidade : Int32
+  * preco_base : Decimal128
+  * categoria : String
+  * status : String
+}
+
+entity "Pedidos\n(SQL Server Table)" as PEDIDO {
+  * Id : INT <<PK, IDENTITY>>
+  --
+  * EventoId : NVARCHAR(50)
+  * ClienteNome : NVARCHAR(200)
+  * ClienteEmail : NVARCHAR(200)
+  * Quantidade : INT
+  * ValorTotal : DECIMAL(18,2)
+  * Status : NVARCHAR(50)
+  * DataPedido : DATETIME2
+}
+
+note "EventoId é uma referência lógica.\nNão há FK entre bancos distintos.\nPersistência Poliglota intencional." as N1
+
+EVENTO ||--o{ PEDIDO : "EventoId\n(referência lógica)"
+@enduml

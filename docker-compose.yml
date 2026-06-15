@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  ms-catalogo-eventos:
+    build: ./ms-catalogo-eventos
+    container_name: pjbl_ms_catalogo
+    ports:
+      - "5001:5001"
+    environment:
+      - ASPNETCORE_URLS=http://+:5001
+      - MongoDB__ConnectionString=${MONGODB_CONNECTION_STRING}
+      - MongoDB__DatabaseName=catalogo_eventos
+
+  ms-pedidos:
+    build: ./ms-pedidos
+    container_name: pjbl_ms_pedidos
+    ports:
+      - "5002:5002"
+    environment:
+      - ASPNETCORE_URLS=http://+:5002
+      - ConnectionStrings__SqlServer=${AZURE_SQL_CONNECTION_STRING}
+
+  bff-nodejs:
+    build: ./bff-nodejs
+    container_name: pjbl_bff
+    ports:
+      - "3000:3000"
+    environment:
+      - MS_EVENTOS_URL=http://ms-catalogo-eventos:5001
+      - MS_PEDIDOS_URL=http://ms-pedidos:5002
+      - AZURE_FUNCTION_URL=${AZURE_FUNCTION_URL}
+    depends_on:
+      - ms-catalogo-eventos
+      - ms-pedidos
+
+  api-gateway:
+    build: ./api-gateway
+    container_name: pjbl_api_gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - bff-nodejs
+
+  frontend-spa:
+    build: ./frontend-spa
+    container_name: pjbl_frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api-gateway

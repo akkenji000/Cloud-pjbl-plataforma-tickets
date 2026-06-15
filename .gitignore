@@ -1,0 +1,83 @@
+# ==========================================
+# 🛑 ARQUIVOS DE SISTEMA OPERACIONAL E IDE
+# ==========================================
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln.docstates
+
+# ==========================================
+# 🛑 SEGURANÇA E VARIÁVEIS DE AMBIENTE
+# ==========================================
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+*.pem
+secrets.json
+
+# ==========================================
+# 🛑 NODE.JS / FRONTEND / BFF
+# ==========================================
+node_modules/
+npm-debug.log
+yarn-error.log
+dist/
+build/
+.next/
+.nuxt/
+coverage/
+
+# ==========================================
+# 🛑 C# / .NET (Caso usem para Microserviços)
+# ==========================================
+bin/
+obj/
+*.user
+*.userosscache
+*.sln.userprefs
+TestResults/
+
+# ==========================================
+# 🛑 JAVA (Caso usem para Microserviços)
+# ==========================================
+target/
+*.class
+*.jar
+*.war
+*.ear
+.gradle/
+
+# ==========================================
+# 🛑 PYTHON / AZURE FUNCTIONS
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+.funcignore
+local.settings.json
+
+# ==========================================
+# 🛑 ARQUIVOS INTERNOS / NÃO ENTREGAR
+# ==========================================
+referencesDocumentation/
+docs/superpowers/
+REQPJBL.md
+LASTCHECK.md
+CLAUDE.md
+.claude/
+.agh/
+
+# ==========================================
+# 🛑 ARTEFATOS DE BUILD / DEPLOY
+# ==========================================
+azure-function/TaxasFunction/publish/
+azure-function/TaxasFunction/function.zip

@@ -1,0 +1,88 @@
+@startuml C4-Level4-Classes
+title [C4 Nível 4 / UML Classes] — MS Catálogo de Eventos
+
+package "Domain" #LightBlue {
+    class Evento {
+        +string? Id
+        +string Nome
+        +DateTime Data
+        +string Local
+        +int Capacidade
+        +decimal PrecoBase
+        +string Categoria
+        +string Status
+    }
+    interface IEventoRepository {
+        +GetAllAsync(): Task<List<Evento>>
+        +GetByIdAsync(id: string): Task<Evento?>
+        +CreateAsync(evento: Evento): Task<Evento>
+        +UpdateAsync(id: string, evento: Evento): Task
+        +DeleteAsync(id: string): Task
+    }
+}
+
+package "Application.Features" #LightGreen {
+    record CreateEventoRequest { Nome, Data, Local, Capacidade, PrecoBase, Categoria }
+    record CreateEventoResponse { Id, Nome, Data, Local, Capacidade, PrecoBase, Categoria, Status }
+    class CreateEventoHandler {
+        -IEventoRepository _repository
+        +HandleAsync(req: CreateEventoRequest): Task<CreateEventoResponse>
+    }
+    record GetEventoResponse { Id, Nome, Data, Local, Capacidade, PrecoBase, Categoria, Status }
+    class GetEventoHandler {
+        -IEventoRepository _repository
+        +HandleAsync(id: string): Task<GetEventoResponse?>
+    }
+    class GetAllEventosHandler {
+        -IEventoRepository _repository
+        +HandleAsync(): Task<List<GetEventoResponse>>
+    }
+    record UpdateEventoRequest { Nome, Data, Local, Capacidade, PrecoBase, Categoria, Status }
+    class UpdateEventoHandler {
+        -IEventoRepository _repository
+        +HandleAsync(id: string, req: UpdateEventoRequest): Task
+    }
+    class DeleteEventoHandler {
+        -IEventoRepository _repository
+        +HandleAsync(id: string): Task
+    }
+}
+
+package "Infrastructure" #LightYellow {
+    class MongoDbContext {
+        -IMongoDatabase _database
+        +IMongoCollection<Evento> Eventos
+    }
+    class EventoRepository {
+        -MongoDbContext _context
+        +GetAllAsync(): Task<List<Evento>>
+        +GetByIdAsync(id: string): Task<Evento?>
+        +CreateAsync(evento: Evento): Task<Evento>
+        +UpdateAsync(id: string, evento: Evento): Task
+        +DeleteAsync(id: string): Task
+    }
+}
+
+package "Controllers" #LightPink {
+    class EventosController {
+        +GetAll(): Task<IActionResult>
+        +GetById(id: string): Task<IActionResult>
+        +Create(req: CreateEventoRequest): Task<IActionResult>
+        +Update(id: string, req: UpdateEventoRequest): Task<IActionResult>
+        +Delete(id: string): Task<IActionResult>
+    }
+}
+
+CreateEventoHandler --> IEventoRepository
+GetEventoHandler --> IEventoRepository
+GetAllEventosHandler --> IEventoRepository
+UpdateEventoHandler --> IEventoRepository
+DeleteEventoHandler --> IEventoRepository
+EventoRepository ..|> IEventoRepository
+EventoRepository --> MongoDbContext
+EventosController --> CreateEventoHandler
+EventosController --> GetEventoHandler
+EventosController --> GetAllEventosHandler
+EventosController --> UpdateEventoHandler
+EventosController --> DeleteEventoHandler
+@enduml

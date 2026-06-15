@@ -1,0 +1,88 @@
+openapi: 3.0.3
+info:
+  title: BFF - Plataforma de Tickets (PJBL)
+  version: 1.0.0
+  description: Backend for Frontend agregando dados de Eventos (Mongo), Pedidos (SQL) e Taxas (Function).
+servers:
+  - url: http://localhost:3000/api
+    description: Servidor Local (BFF)
+paths:
+  /aggregated-data:
+    get:
+      summary: Retorna todos os dados consolidados para o Dashboard do Usuário.
+      description: Faz chamadas concorrentes para os microserviços e retorna um payload único.
+      parameters:
+        - in: header
+          name: x-user-id
+          schema:
+            type: string
+          required: true
+          description: ID do usuário logado.
+      responses:
+        '200':
+          description: Dados agregados com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardResponse'
+        '500':
+          description: Erro interno de agregação.
+
+components:
+  schemas:
+    DashboardResponse:
+      type: object
+      properties:
+        usuarioId:
+          type: string
+          example: "user-789"
+        taxaConvenienciaAtual:
+          type: object
+          properties:
+            percentualAplicado:
+              type: number
+              example: 10.5
+            mensagem:
+              type: string
+              example: "Você possui desconto VIP aplicável."
+            origem:
+              type: string
+              example: "Azure Function"
+        eventosEmDestaque:
+          type: array
+          items:
+            type: object
+            properties:
+              eventoId:
+                type: string
+                example: "ev-001"
+              nome:
+                type: string
+                example: "Rock in Rio 2026"
+              data:
+                type: string
+                format: date-time
+                example: "2026-09-18T20:00:00Z"
+              origem:
+                type: string
+                example: "Microserviço Mongo"
+        meusUltimosPedidos:
+          type: array
+          items:
+            type: object
+            properties:
+              pedidoId:
+                type: string
+                example: "ped-445"
+              evento:
+                type: string
+                example: "Lollapalooza"
+              status:
+                type: string
+                example: "Pagamento Aprovado"
+              totalPago:
+                type: number
+                example: 850.00
+              origem:
+                type: string
+                example: "Microserviço SQL"

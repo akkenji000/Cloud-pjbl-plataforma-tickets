@@ -1,0 +1,35 @@
+@startuml C4-Level3-Component
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+LAYOUT_WITH_LEGEND()
+title [C4 Nível 3] Diagrama de Componentes — MS Catálogo de Eventos
+
+Container_Ext(bff, "BFF", "NestJS", "Chama o microsserviço via HTTP")
+ContainerDb_Ext(mongodb, "MongoDB", "NoSQL", "Armazena eventos")
+
+Container_Boundary(ms, "MS Catálogo de Eventos (ASP.NET Core 10)") {
+    Component(ctrl, "EventosController", "ASP.NET Controller", "Recebe requisições HTTP e retorna respostas REST/JSON")
+    Component(createH, "CreateEventoHandler", "Application Feature", "Orquestra criação de evento")
+    Component(getH, "GetEventoHandler", "Application Feature", "Busca evento por ID")
+    Component(getAllH, "GetAllEventosHandler", "Application Feature", "Lista todos os eventos")
+    Component(updateH, "UpdateEventoHandler", "Application Feature", "Atualiza evento existente")
+    Component(deleteH, "DeleteEventoHandler", "Application Feature", "Remove evento")
+    Component(iRepo, "IEventoRepository", "Domain Interface", "Contrato de acesso a dados — isolamento entre Application e Infrastructure")
+    Component(repo, "EventoRepository", "Infrastructure Repository", "Implementação MongoDB do repositório")
+    Component(ctx, "MongoDbContext", "Infrastructure Context", "Gerencia conexão e collection MongoDB")
+}
+
+Rel(bff, ctrl, "HTTP REST/JSON")
+Rel(ctrl, createH, "Delega criação")
+Rel(ctrl, getH, "Delega busca por ID")
+Rel(ctrl, getAllH, "Delega listagem")
+Rel(ctrl, updateH, "Delega atualização")
+Rel(ctrl, deleteH, "Delega remoção")
+Rel(createH, iRepo, "Usa via DI")
+Rel(getH, iRepo, "Usa via DI")
+Rel(getAllH, iRepo, "Usa via DI")
+Rel(updateH, iRepo, "Usa via DI")
+Rel(deleteH, iRepo, "Usa via DI")
+Rel(repo, iRepo, "Implementa", "<<interface>>")
+Rel(repo, ctx, "Usa")
+Rel(ctx, mongodb, "MongoDB Driver")
+@enduml
