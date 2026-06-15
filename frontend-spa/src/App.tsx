@@ -60,8 +60,6 @@ const labelStyle: React.CSSProperties = { display: 'block', fontSize: '12px', co
 const fieldStyle: React.CSSProperties = { marginBottom: '14px' };
 const btnPrimary: React.CSSProperties = { width: '100%', padding: '12px', background: '#7c3aed',
   color: '#fff', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', marginTop: '4px' };
-const btnDanger: React.CSSProperties = { width: '100%', padding: '12px', background: '#dc2626',
-  color: '#fff', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', marginTop: '8px' };
 
 function NovoEventoForm({ onSuccess }: { onSuccess: () => void; onClose: () => void }) {
   const [form, setForm] = useState({ nome: '', data: '', local: '', capacidade: '', precoBase: '', categoria: 'Musica', status: 'Disponivel' });
