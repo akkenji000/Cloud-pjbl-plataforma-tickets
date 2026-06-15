@@ -60,6 +60,8 @@ const labelStyle: React.CSSProperties = { display: 'block', fontSize: '12px', co
 const fieldStyle: React.CSSProperties = { marginBottom: '14px' };
 const btnPrimary: React.CSSProperties = { width: '100%', padding: '12px', background: '#7c3aed',
   color: '#fff', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', marginTop: '4px' };
+const btnDanger: React.CSSProperties = { width: '100%', padding: '12px', background: '#dc2626',
+  color: '#fff', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', marginTop: '8px' };
 
 function NovoEventoForm({ onSuccess }: { onSuccess: () => void; onClose: () => void }) {
   const [form, setForm] = useState({ nome: '', data: '', local: '', capacidade: '', precoBase: '', categoria: 'Musica', status: 'Disponivel' });
@@ -100,6 +102,94 @@ function NovoEventoForm({ onSuccess }: { onSuccess: () => void; onClose: () => v
       </div>
       <button style={btnPrimary} onClick={submit} disabled={saving}>
         {saving ? 'Salvando...' : '🎫 Cadastrar Evento'}
+      </button>
+    </div>
+  );
+}
+
+function EditEventoForm({ evento, onSuccess }: { evento: Evento; onSuccess: () => void; onClose: () => void }) {
+  const toLocalDatetime = (iso: string) => {
+    try { return new Date(iso).toISOString().slice(0, 16); } catch { return ''; }
+  };
+  const [form, setForm] = useState({
+    nome: evento.nome, data: toLocalDatetime(evento.data), local: evento.local,
+    capacidade: String(evento.capacidade), precoBase: String(evento.precoBase),
+    categoria: evento.categoria, status: evento.status,
+  });
+  const [saving, setSaving] = useState(false);
+
+  const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
+
+  const submit = async () => {
+    setSaving(true);
+    try {
+      await axios.put(`/api/eventos/${evento.id}`, {
+        ...form, capacidade: Number(form.capacidade), precoBase: Number(form.precoBase),
+      });
+      onSuccess();
+    } finally { setSaving(false); }
+  };
+
+  return (
+    <div>
+      <div style={fieldStyle}><label style={labelStyle}>Nome do Evento</label>
+        <input style={inputStyle} value={form.nome} onChange={e => set('nome', e.target.value)} /></div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+        <div style={fieldStyle}><label style={labelStyle}>Data</label>
+          <input style={inputStyle} type="datetime-local" value={form.data} onChange={e => set('data', e.target.value)} /></div>
+        <div style={fieldStyle}><label style={labelStyle}>Capacidade</label>
+          <input style={inputStyle} type="number" value={form.capacidade} onChange={e => set('capacidade', e.target.value)} /></div>
+      </div>
+      <div style={fieldStyle}><label style={labelStyle}>Local</label>
+        <input style={inputStyle} value={form.local} onChange={e => set('local', e.target.value)} /></div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+        <div style={fieldStyle}><label style={labelStyle}>Categoria</label>
+          <select style={inputStyle} value={form.categoria} onChange={e => set('categoria', e.target.value)}>
+            {['Musica', 'Teatro', 'Esporte', 'Festival', 'Cinema', 'Stand'].map(c =>
+              <option key={c}>{c}</option>)}
+          </select></div>
+        <div style={fieldStyle}><label style={labelStyle}>Status</label>
+          <select style={inputStyle} value={form.status} onChange={e => set('status', e.target.value)}>
+            {['Disponivel', 'Esgotado', 'Cancelado'].map(s => <option key={s}>{s}</option>)}
+          </select></div>
+      </div>
+      <div style={fieldStyle}><label style={labelStyle}>Preço Base (R$)</label>
+        <input style={inputStyle} type="number" value={form.precoBase} onChange={e => set('precoBase', e.target.value)} /></div>
+      <button style={btnPrimary} onClick={submit} disabled={saving}>
+        {saving ? 'Salvando...' : '💾 Salvar Alterações'}
+      </button>
+    </div>
+  );
+}
+
+function EditPedidoForm({ pedido, onSuccess }: { pedido: Pedido; onSuccess: () => void; onClose: () => void }) {
+  const [status, setStatus] = useState(pedido.status);
+  const [saving, setSaving] = useState(false);
+
+  const submit = async () => {
+    setSaving(true);
+    try {
+      await axios.put(`/api/pedidos/${pedido.id}`, { ...pedido, status });
+      onSuccess();
+    } finally { setSaving(false); }
+  };
+
+  return (
+    <div>
+      <div style={{ background: '#0f0f13', borderRadius: '10px', padding: '14px 16px', marginBottom: '20px',
+        fontSize: '13px', color: '#94a3b8', lineHeight: '1.9' }}>
+        <div><span style={{ color: '#64748b' }}>Pedido</span> <strong style={{ color: '#fff' }}>#{pedido.id}</strong></div>
+        <div><span style={{ color: '#64748b' }}>Cliente</span> <strong style={{ color: '#fff' }}>{pedido.clienteNome}</strong></div>
+        <div><span style={{ color: '#64748b' }}>Ingressos</span> <strong style={{ color: '#fff' }}>{pedido.quantidade}x</strong></div>
+        <div><span style={{ color: '#64748b' }}>Total</span> <strong style={{ color: '#22c55e' }}>R$ {pedido.valorTotal.toFixed(2)}</strong></div>
+      </div>
+      <div style={fieldStyle}><label style={labelStyle}>Novo Status</label>
+        <select style={inputStyle} value={status} onChange={e => setStatus(e.target.value)}>
+          {['Pendente', 'Confirmado', 'Cancelado'].map(s => <option key={s}>{s}</option>)}
+        </select>
+      </div>
+      <button style={btnPrimary} onClick={submit} disabled={saving}>
+        {saving ? 'Salvando...' : '💾 Atualizar Status'}
       </button>
     </div>
   );
@@ -152,10 +242,19 @@ function NovoPedidoForm({ eventos, onSuccess }: { eventos: Evento[]; onSuccess: 
   );
 }
 
+type ModalType = 'evento' | 'pedido' | 'edit-evento' | 'edit-pedido' | null;
+
+const iconBtn = (color: string): React.CSSProperties => ({
+  background: color + '18', border: `1px solid ${color}44`, color,
+  borderRadius: '6px', padding: '4px 8px', fontSize: '12px', cursor: 'pointer', fontWeight: 700,
+});
+
 export default function App() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [modal, setModal] = useState<'evento' | 'pedido' | null>(null);
+  const [modal, setModal] = useState<ModalType>(null);
+  const [selectedEvento, setSelectedEvento] = useState<Evento | null>(null);
+  const [selectedPedido, setSelectedPedido] = useState<Pedido | null>(null);
 
   const fetchData = () => {
     setLoading(true);
@@ -166,7 +265,20 @@ export default function App() {
 
   useEffect(() => { fetchData(); }, []);
 
-  const handleSuccess = () => { setModal(null); fetchData(); };
+  const handleSuccess = () => { setModal(null); setSelectedEvento(null); setSelectedPedido(null); fetchData(); };
+  const closeModal = () => { setModal(null); setSelectedEvento(null); setSelectedPedido(null); };
+
+  const handleDeleteEvento = async (id: string) => {
+    if (!confirm('Deletar este evento?')) return;
+    await axios.delete(`/api/eventos/${id}`);
+    fetchData();
+  };
+
+  const handleDeletePedido = async (id: number) => {
+    if (!confirm('Deletar este pedido?')) return;
+    await axios.delete(`/api/pedidos/${id}`);
+    fetchData();
+  };
 
   if (loading) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -283,7 +395,17 @@ export default function App() {
                       🎟️ {evento.capacidade.toLocaleString('pt-BR')} lugares · {evento.categoria}
                     </div>
                   </div>
-                  <Badge status={evento.status} />
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
+                    <Badge status={evento.status} />
+                    <div style={{ display: 'flex', gap: '6px', marginTop: '4px' }}>
+                      <button style={iconBtn('#a855f7')} onClick={() => { setSelectedEvento(evento); setModal('edit-evento'); }}>
+                        ✏️ Editar
+                      </button>
+                      <button style={iconBtn('#ef4444')} onClick={() => handleDeleteEvento(evento.id)}>
+                        🗑️ Deletar
+                      </button>
+                    </div>
+                  </div>
                 </div>
                 <div style={{ padding: '12px 20px', display: 'flex', justifyContent: 'space-between',
                   alignItems: 'center', borderTop: '1px solid #ffffff08' }}>
@@ -344,6 +466,16 @@ export default function App() {
                   <span style={{ fontSize: '12px', color: '#64748b' }}>Evento: {pedido.eventoId.slice(0, 8)}...</span>
                   <span style={{ fontSize: '18px', fontWeight: 800, color: '#22c55e' }}>R$ {pedido.valorTotal.toFixed(2)}</span>
                 </div>
+                <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                  <button style={{ ...iconBtn('#60a5fa'), flex: 1 }}
+                    onClick={() => { setSelectedPedido(pedido); setModal('edit-pedido'); }}>
+                    ✏️ Editar Status
+                  </button>
+                  <button style={{ ...iconBtn('#ef4444'), flex: 1 }}
+                    onClick={() => handleDeletePedido(pedido.id)}>
+                    🗑️ Deletar
+                  </button>
+                </div>
               </div>
             ))}
         </div>
@@ -351,13 +483,23 @@ export default function App() {
 
       {/* Modais */}
       {modal === 'evento' && (
-        <Modal title="🎫 Cadastrar Novo Evento" onClose={() => setModal(null)}>
-          <NovoEventoForm onSuccess={handleSuccess} onClose={() => setModal(null)} />
+        <Modal title="🎫 Cadastrar Novo Evento" onClose={closeModal}>
+          <NovoEventoForm onSuccess={handleSuccess} onClose={closeModal} />
+        </Modal>
+      )}
+      {modal === 'edit-evento' && selectedEvento && (
+        <Modal title="✏️ Editar Evento" onClose={closeModal}>
+          <EditEventoForm evento={selectedEvento} onSuccess={handleSuccess} onClose={closeModal} />
         </Modal>
       )}
       {modal === 'pedido' && (
-        <Modal title="🛒 Criar Pedido" onClose={() => setModal(null)}>
-          <NovoPedidoForm eventos={data.eventosEmDestaque} onSuccess={handleSuccess} onClose={() => setModal(null)} />
+        <Modal title="🛒 Criar Pedido" onClose={closeModal}>
+          <NovoPedidoForm eventos={data.eventosEmDestaque} onSuccess={handleSuccess} onClose={closeModal} />
+        </Modal>
+      )}
+      {modal === 'edit-pedido' && selectedPedido && (
+        <Modal title="✏️ Editar Pedido" onClose={closeModal}>
+          <EditPedidoForm pedido={selectedPedido} onSuccess={handleSuccess} onClose={closeModal} />
         </Modal>
       )}
     </div>
